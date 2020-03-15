@@ -80,6 +80,20 @@ public class ProductHandler {
         ).switchIfEmpty(ServerResponse.notFound().build());
     }
 
+    public Mono<ServerResponse> partialUpdateProduct(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Mono<Product> existingProductMono = this.productRepository.findById(id);
+        Mono<Product> productMono = request.bodyToMono(Product.class);
+
+        return productMono.zipWith(existingProductMono, (product, existingProduct) -> new Product(
+               existingProduct.getId(), product.getName()!=null?product.getName():existingProduct.getName(),
+               product.getPrice()!=null?product.getPrice():existingProduct.getPrice()
+        )).flatMap(product -> ServerResponse.ok()
+        .contentType(APPLICATION_JSON)
+        .body(productRepository.save(product), Product.class)
+        .switchIfEmpty(ServerResponse.notFound().build()));
+    }
+
     public Mono<ServerResponse> deleteProduct(ServerRequest request) {
         String id = request.pathVariable("id");
 
@@ -87,7 +101,7 @@ public class ProductHandler {
                 .flatMap(existingProduct -> ServerResponse.ok()
                         .build(productRepository.delete(existingProduct))
                 ).switchIfEmpty(ServerResponse.notFound().build());
-    }
+}
 
     public Mono<ServerResponse> deleteAll() {
         return ServerResponse.ok()
@@ -102,3 +116,4 @@ public class ProductHandler {
                 .body(eventsFlux, ProductEvent.class);
     }
 }
+

@@ -21,6 +21,7 @@ public class ProductRouter {
                                         route(GET("/"), productHandler::getProduct)
                                                 .andRoute(DELETE("/"), productHandler::deleteProduct)
                                                 .andRoute(PUT("/"), productHandler::updateProduct)
+                                                .andRoute(PATCH("/"), productHandler::partialUpdateProduct)
                                 )
                 )
         );
